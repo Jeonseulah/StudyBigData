@@ -95,10 +95,10 @@ def main():
         cursor = connection.cursor()
 
         #컬럼명 동적으로 만들기 
-        cols= '`,`'.join([str(i) for i in result_df.columns.tolist()])
+        cols= ','.join([str(i) for i in result_df.columns.tolist()])
 
         for i, row in result_df.iterrows():
-            sql= 'INSERT INTO `galmatgil_info`(`'+cols+'`)VALUES('+'%s,'*(len(row)-1)+'%s)'
+            sql= 'INSERT INTO galmatgil_info ('+cols+') VALUES ('+'%s,'*(len(row)-1)+'%s)'
             cursor.execute(sql, tuple(row))
 
         connection. commit()
