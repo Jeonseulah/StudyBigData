@@ -3,6 +3,7 @@
 
 import os
 import sys
+from tkinter import NS
 from unittest import result
 import urllib.request
 import datetime
@@ -95,7 +96,13 @@ def main():
     if natName == '':
         print('데이터 전달 실패. 공공데이터포털 서비스 확인 요망')
     else:
-        pass
+        #파일저장 csv
+        columns = ['입국국가','국가코드','입국연월','입국자수']
+        result_df= pd.DataFrame(result,columns=columns)
+        result_df.to_csv(f'./{natName}_{ed}_{nStartYear}_{dataEnd}.csv',index=False,
+                        encoding='utf-8') # 한글 윈도우에서 열고 싶을 때 cp949, 코딩 빅데이터 할 때 utf-8로 바꿔서 사용
+        print('csv파일 저장완료!!')
+
 if __name__ == '__main__':
     main()
 
