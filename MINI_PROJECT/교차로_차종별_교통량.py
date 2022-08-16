@@ -1,14 +1,14 @@
-# Ody77GLuYeR%2FeFqbpduMN2Bi4Cka2fztbgnj6E2Eux1kUhy3e4epR28XKBUaObiqPoVzAizxXMBPXtMyuC9v9Q%3D%3D
-# 데이터 포털 API 크롤링 
-
+import os
+import sys
+from tkinter import NS
+from unittest import result
 import urllib.request
 import datetime
 import time
 import json
 import pandas as pd 
 
-ServiceKey = 'Ody77GLuYeR%2FeFqbpduMN2Bi4Cka2fztbgnj6E2Eux1kUhy3e4epR28XKBUaObiqPoVzAizxXMBPXtMyuC9v9Q%3D%3D'
-
+ServiceKey = 'hxyib50euy22Wz9%2Bn7G5JYgT9pz8woNjRsRbmiNBZGrCNVdYBYeq7DCCZnGVHGXxBFCjxsHfU7gVPRX%2B8WPYKA%3D%3D'
 
 # url 접속 요청 후 응답리턴 함수 # 한줄삭제(shift+delete) # (ctrl+space bar)
 def getRequestUrl(url):
@@ -25,13 +25,13 @@ def getRequestUrl(url):
         print(f'[{datetime.datetime.now()}]Error for URL:{url}')
         return None
 
-
-def getInterSectionInfo():
-    service_url = 'http://openapi.tour.go.kr/openapi/service/EdrcntTourismStatsService/getEdrcntTourismStatsList'
+#202201, 110, D
+def getCrossroad( ):
+    service_url = 'https://apis.data.go.kr/6260000/CrossCartypeTrafficeVolumeService/getCrossCartypeTrafficeVolumeList'
     params = f'?_type=json&serviceKey={ServiceKey}'  #인증키
-    params += f'&pageNo=1'
-    params += f'&resultType=json'
-    params += f'&CLCT_DT=201809051205'
+    params += f'&YM={yyyymm}'
+    params += f'&NAT_CD={nat_cd}'
+    params += f'&ED_CD={ed_cd}'
     url =  service_url +params
 
     # print(url)
@@ -42,22 +42,35 @@ def getInterSectionInfo():
     else:
         return json.loads(retData)
 
-def getInterSectionInfo():
+def getTourismStatsService( nat_cd, ed_cd, nStartYear,nEndYear):
+    jsonResult=[]
     result=[]
-    
-    jsonData = getInterSectionInfo()
+    natName=' '
+    dataEnd=f'{nEndYear}{12:0>2}' #20222(n) 202202(y)
+    isDataEnd= False #데이터 끝 확인용 플래그 
 
-    if jsonData['getCrossCartypeTrafficVolumeList']['header']['code'] == '00' : 
-                if jsonData['getCrossCartypeTrafficVolumeList']['items'] =='':
-                    print(f'서비스오류')
-                else:
+    for year in range(nStartYear,nEndYear+1):
+        for month in range(1,13):
+            if isDataEnd == True : break
+            
+            yyyymm = f'{year}{str(month):0>2}'
+            jsonData =  getTourismStatsItem(yyyymm,nat_cd,ed_cd)
+            if jsonData['response']['header']['resultMsg'] == 'OK' : 
+                #데이터가 없는 경우라면 서비스 종료 
+                if jsonData['response']['body']['items'] =='':
+                    isDataEnd = True
+                    dataEnd= f'{year}{month-1:0>2}'
+                    print(f'제공되는 데이터는 {year}년 {month-1}월 까지 입니다.')
+                    break
+            print(json.dumps(jsonData, indent=4, sort_keys=True, ensure_ascii=False))
+            natName = jsonData['response']['body']['items']['item']['natKorNm']
+            natName = natName.replace('  ','')
+            num = jsonData['response']['body']['items']['item']['num']
+            ed = jsonData['response']['body']['items']['item']['ed']
 
-                    for item in jsonData['getCrossCartypeTrafficVolumeList']['items']
-                        ISTL_LCTN = item['ISTL_LCTN']
-                        CLCT_DT = item['CLCT_DT']
-                        SUM_LRGTFVL = item['SUM_LRGTFVL']
-                        
-
+            jsonResult.append({'nat_name':natName, 'nat_cd':nat_cd, 'yyyymm':yyyymm, 'visit_cnt':num})
+            result.append([natName, nat_cd, yyyymm, num ])
+    return (jsonResult, result, natName, ed, dataEnd)
 
 
 def main():
@@ -88,6 +101,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
